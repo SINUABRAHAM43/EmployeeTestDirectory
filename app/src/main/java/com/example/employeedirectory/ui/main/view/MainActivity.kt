@@ -4,38 +4,27 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.employeedirectory.data.api.ApiHelper
-import com.example.employeedirectory.data.api.ApiServiceImpl
-import com.example.employeedirectory.data.database.EmployeeDataViewModel
 import com.example.employeedirectory.data.database.EmployeeEntity
-import com.example.employeedirectory.data.database.EmployeeViewModelFactory
-import com.example.employeedirectory.data.model.Employee
 import com.example.employeedirectory.databinding.ActivityMainBinding
 import com.example.employeedirectory.myApplication
 import com.example.employeedirectory.ui.base.ViewModelFactory
 import com.example.employeedirectory.ui.main.adapter.EmployeeListAdapter
 import com.example.employeedirectory.ui.main.viewmodel.EmployeeViewModel
 import com.example.employeedirectory.utils.Status
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: EmployeeListAdapter
     private lateinit var mainViewModel: EmployeeViewModel
-    private var employees = ArrayList<Employee>()
-    private val employeeVm: EmployeeDataViewModel by viewModels {
-        EmployeeViewModelFactory((application as myApplication).repository)
-    }
+    private var employees = ArrayList<EmployeeEntity>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,13 +54,12 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     }
 
     private fun setupObserver() {
-        mainViewModel.getEmployees().observe(this, Observer {
+        mainViewModel.getEmployees().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> {
                     binding.progressBar.visibility = View.GONE
                     it.data?.let { users ->
-                        employees = users as ArrayList<Employee>
-                        addList(users)
+                        employees = users as ArrayList<EmployeeEntity>
                         renderList(users)
                     }
                     binding.search.visibility = View.VISIBLE
@@ -91,39 +79,16 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         })
     }
 
-    private fun addList(users: java.util.ArrayList<Employee>) {
 
-            users.forEach {
-                val address = it.address
-                val company = it.company
-                val employeeData = EmployeeEntity(
-                    it.id,
-                    it.name,
-                    it.username,
-                    it.email,
-                    it.profile_image,
-                    address?.street ?: "",
-                    address?.suite ?: "",
-                    address?.city ?: "",
-                    address?.zipcode ?: "",
-                    it.phone ?: "",
-                    it.website ?: "",
-                    company?.name ?: ""
-                )
-                employeeVm.insert(employeeData)
-            }
-        
-    }
-
-
-    private fun renderList(users: List<Employee>) {
+    private fun renderList(users: List<EmployeeEntity>) {
         adapter.addData(users)
     }
 
     private fun setupViewModel() {
-        mainViewModel = ViewModelProvider(this, ViewModelFactory(ApiHelper(ApiServiceImpl()))).get(
-            EmployeeViewModel::class.java
-        )
+        mainViewModel = ViewModelProvider(
+            this,
+            ViewModelFactory((application as myApplication).repository)
+        ).get(EmployeeViewModel::class.java)
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {

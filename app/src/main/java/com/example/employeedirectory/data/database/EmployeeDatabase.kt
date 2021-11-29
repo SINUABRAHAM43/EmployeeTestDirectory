@@ -25,8 +25,7 @@ import androidx.room.RoomDatabase
                     context.applicationContext,
                     EmployeeDatabase::class.java,
                     "EmployeeDatabase"
-                )
-                    .allowMainThreadQueries()
+                ).allowMainThreadQueries()
                     .build()
                 INSTANCE = instance
                 // return instance

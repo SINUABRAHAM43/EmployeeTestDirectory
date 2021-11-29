@@ -7,18 +7,19 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.employeedirectory.R
+import com.example.employeedirectory.data.database.EmployeeEntity
 import com.example.employeedirectory.data.model.Employee
 import kotlinx.android.synthetic.main.item_employee.view.*
 
 class EmployeeListAdapter (
-    private val Employees: ArrayList<Employee>,val listener: (Employee) -> Unit
+    private val Employees: ArrayList<EmployeeEntity>,val listener: (EmployeeEntity) -> Unit
 
 ) : RecyclerView.Adapter<EmployeeListAdapter.DataViewHolder>() {
 
     class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(employee: Employee) {
+        fun bind(employee: EmployeeEntity) {
             itemView.tv_employee_name.text = employee.name
-            itemView.tv_company_name.text = employee.company?.name
+            itemView.tv_company_name.text = employee.company_name
             Glide.with(itemView.profile_image.context)
                 .load(employee.profile_image)
                 .into(itemView.profile_image)
@@ -44,7 +45,7 @@ class EmployeeListAdapter (
         }
     }
 
-    fun addData(list: List<Employee>) {
+    fun addData(list: List<EmployeeEntity>) {
         Employees.clear()
         Employees.addAll(list)
         notifyDataSetChanged()
